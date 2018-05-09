@@ -1,0 +1,34 @@
+{
+  "name": "kdes70/chatter",
+  "description": "real-time chat",
+  "type": "library",
+  "version": "1.0.0",
+  "keywords": [
+    "laravel",
+    "real-time",
+    "chat"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dmitry Krivoshein",
+      "email": "kdes70@mail.ru"
+    }
+  ],
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "Kdes70\\Chatter\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Kdes70\\Chatter\\ChatterServiceProvider"
+      ],
+      "aliases": {
+        "Chatter": "Chatter\\Facades\\Chatter"
+      }
+    }
+  }
+}
