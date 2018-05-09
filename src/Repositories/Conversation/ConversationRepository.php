@@ -5,6 +5,7 @@ namespace Kdes70\Chatter\Repositories\Conversation;
 use Illuminate\Support\Collection;
 use Kdes70\Chatter\Models\Conversation;
 use Kdes70\Chatter\Repositories\BaseRepository;
+use PhpJunior\LaravelVideoChat\Events\NewConversationMessage;
 
 class ConversationRepository extends BaseRepository
 {
@@ -95,6 +96,52 @@ class ConversationRepository extends BaseRepository
     }
 
     /**
+     * @param $conversation_id
+     * @param array $data
+     *
+     * @return bool
+     */
+    public function sendConversationMessage($conversation_id, array $data)
+    {
+        return $this->sendMessage($conversation_id, $data);
+    }
+
+
+    /**
+     * @param $userOne
+     * @param $userTwo
+     * @return bool
+     */
+    public function startConversationWith($userOne, $userTwo)
+    {
+        $created = $this->query()->create([
+            'userOne'  => $userOne,
+            'userTwo' => $userTwo,
+        ]);
+        if ($created) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param $user_id
+     * @param $conversation_id
+     * @return bool
+     */
+    public function acceptMessageRequest($user_id, $conversation_id)
+    {
+        if ($this->checkUserExist($user_id, $conversation_id)) {
+            $conversation = $this->find($conversation_id);
+            $conversation->status = true;
+            $conversation->save();
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
      * @param $user_id
      * @param $conversation_id
      * @return bool
@@ -106,6 +153,29 @@ class ConversationRepository extends BaseRepository
             if (($thread->user_one == $user_id) || ($thread->user_two == $user_id)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * @param $conversation_id
+     * @param array $data
+     *
+     * @return bool
+     */
+    private function sendMessage($conversation_id, array $data)
+    {
+        $conversation = $this->find($conversation_id);
+        $created = $conversation->messages()
+            ->create([
+                'message'    => $data['text'],
+                'recipient_user_id' => $data['recipient_id'],
+                'sender_user_id' => $data['sender_id'],
+            ]);
+
+        if ($created) {
+            broadcast(new NewConversationMessage($data['message'], $data['channel'], $data['sender_id']));
+            return true;
         }
         return false;
     }

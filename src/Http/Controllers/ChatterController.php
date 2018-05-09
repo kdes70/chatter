@@ -20,12 +20,11 @@ class ChatterController extends Controller
      */
     public function __construct(ChatterService $service)
     {
-        //$this->middleware(['web','auth']);
+        $this->middleware(['auth']);
 
         $this->service = $service;
-//
 
-
+        dd( $this->service);
     }
 
     /**
@@ -35,10 +34,13 @@ class ChatterController extends Controller
      */
     public function index()
     {
-        $onversations = $this->service->getAllConversations();
+        // TODO понять почему не определяется в конструкторе
+        $user_id = auth()->check() ? auth()->user()->id : null;
+
+        $conversations = $this->service->getAllConversations($user_id);
 
         return view('chatter::chat')->with([
-            'conversations' => $onversations,
+            'conversations' => $conversations,
         ]);
     }
 
@@ -47,14 +49,26 @@ class ChatterController extends Controller
      */
     public function chat($conversation_id)
     {
-        $conversation = Chatter::getConversationMessageById($conversation_id);
+        $user_id = auth()->check() ? auth()->user()->id : null;
+
+        $conversation = Chatter::getConversationMessageById($user_id);
 
 //        return view('chat')->with([
 //            'conversation' => $conversation
 //        ]);
     }
 
+    public function newConversation($recipient_id)
+    {
 
+    }
+
+    public function send(Request $request)
+    {
+        $user_id = auth()->check() ? auth()->user()->id : null;
+
+        Chatter::sendConversationMessage($user_id, $request->input('conversationId'), $request->input('text'));
+    }
 
 
     /**

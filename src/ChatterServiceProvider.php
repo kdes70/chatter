@@ -70,7 +70,6 @@ class ChatterServiceProvider extends ServiceProvider
         });
     }
 
-
     protected function registerChatter(): void
     {
         $this->app->bind('chatter', function ($app) {
@@ -80,7 +79,6 @@ class ChatterServiceProvider extends ServiceProvider
         });
 
     }
-
 
     protected function registerAlias(): void
     {

@@ -11,5 +11,6 @@ Route::group([
 
     Route::get('/', 'ChatterController@index')->name('messages');
     Route::get('/chat/{conversation_id}', 'ChatterController@chat')->name('chat');
+    Route::get('/chat/conversation/{recipient_id}', 'ChatterController@new_conversation')->name('new_conversation');
 
 });

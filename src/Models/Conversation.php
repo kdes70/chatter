@@ -13,7 +13,6 @@ class Conversation extends Model
 
     protected $fillable = ['user_one', 'user_two'];
 
-
     /**
      * @param array $attributes
      */

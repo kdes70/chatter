@@ -125,7 +125,7 @@
 
         created() {
 
-            console.log(this.conversation_id);
+            console.log(this.current_user);
 
         },
         methods: {
@@ -238,6 +238,10 @@
 
             getUser() {
                 return this.current_user;
+            },
+
+            check(id) {
+                return id === this.getUser;
             },
 
             // getConversationId(id)

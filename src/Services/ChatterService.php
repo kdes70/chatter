@@ -2,6 +2,7 @@
 
 namespace Kdes70\Chatter\Services;
 
+use App\Domain\User\User;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Collection;
 use Kdes70\Chatter\Repositories\Conversation\ConversationRepository;
@@ -25,33 +26,65 @@ class ChatterService
         $this->config = $config;
         $this->conversation = $conversation;
 
-        dd(\Auth::guard());
-
-       $this->user_id = auth()->check() ? auth()->user()->id : null;
-
+        // TODO почему не ловит юзера?
+        if (\Auth::check()) {
+            $this->user_id = $user = \Auth::user()->id;
+        }
     }
 
     /**
+     * @param $user_id
      * @return \Illuminate\Support\Collection
      */
-    public function getAllConversations()
+    public function getAllConversations($user_id)
     {
-
-        return $this->conversation->getAllConversations($this->user_id);
+        return $this->conversation->getAllConversations($user_id);
     }
 
     /**
-     * @param $conversationId
+     * @param $user_id
+     * @param $conversation_id
      *
      * @return Collection|null
      */
-    public function getConversationMessageById($conversationId): ?Collection
+    public function getConversationMessageById($user_id, $conversation_id): ?Collection
     {
-        if ($this->conversation->checkUserExist($this->userId, $conversationId)) {
-            $channel = $this->getChannelName($conversationId, 'chat_room');
-            return $this->conversation->getConversationMessageById($conversationId, $this->userId, $channel);
+        if ($this->conversation->checkUserExist($user_id, $conversation_id)) {
+            $channel = $this->getChannelName($conversation_id, 'chat_room');
+            return $this->conversation->getConversationMessageById($conversation_id, $user_id, $channel);
         }
         abort(404);
+    }
+
+    /**
+     * @param $user_id
+     * @param $conversation_id
+     * @param $text
+     */
+    public function sendConversationMessage($user_id, $conversation_id, $text)
+    {
+        $this->conversation->sendConversationMessage($conversation_id, [
+            'text'    => $text,
+            'user_id' => $user_id,
+            'channel' => $this->getChannelName($conversation_id, 'chat_room'),
+        ]);
+    }
+
+    /**
+     * @param $auth_user_id
+     * @param $user_id
+     */
+    public function startConversationWith($auth_user_id, $user_id)
+    {
+        $this->conversation->startConversationWith($auth_user_id, $user_id);
+    }
+
+    /**
+     * @param $conversation_id
+     */
+    public function acceptMessageRequest($user_id, $conversation_id)
+    {
+        $this->conversation->acceptMessageRequest($user_id, $conversation_id);
     }
 
     /**
