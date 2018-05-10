@@ -2,7 +2,6 @@
 
 namespace Kdes70\Chatter\Services;
 
-use App\Domain\User\User;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Collection;
 use Kdes70\Chatter\Repositories\Conversation\ConversationRepository;
@@ -51,7 +50,8 @@ class ChatterService
     {
         if ($this->conversation->checkUserExist($user_id, $conversation_id)) {
             $channel = $this->getChannelName($conversation_id, 'chat_room');
-            return $this->conversation->getConversationMessageById($conversation_id, $user_id, $channel);
+
+            return $this->conversation->getConversationMessageById($conversation_id, $channel);
         }
         abort(404);
     }
@@ -59,13 +59,15 @@ class ChatterService
     /**
      * @param $user_id
      * @param $conversation_id
-     * @param $text
+     * @param $message
+     * @param $receiver_id
      */
-    public function sendConversationMessage($user_id, $conversation_id, $text)
+    public function sendConversationMessage($user_id, $conversation_id, $message, $receiver_id)
     {
         $this->conversation->sendConversationMessage($conversation_id, [
-            'text'    => $text,
+            'message'    => $message,
             'user_id' => $user_id,
+            'receiver_id' => $receiver_id,
             'channel' => $this->getChannelName($conversation_id, 'chat_room'),
         ]);
     }

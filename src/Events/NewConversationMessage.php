@@ -1,10 +1,11 @@
 <?php
 
-namespace PhpJunior\LaravelVideoChat\Events;
+namespace Kdes70\Chatter\Events;
 
 use Carbon\Carbon;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -15,7 +16,7 @@ class NewConversationMessage implements ShouldBroadcast
     /**
      * @var
      */
-    public $text;
+    public $message;
     /**
      * @var
      */
@@ -28,15 +29,17 @@ class NewConversationMessage implements ShouldBroadcast
     /**
      * Create a new event instance.
      *
-     * @param $text
+     * @param $message
      * @param $channel
      * @param $sender
      */
-    public function __construct($text, $channel, $sender)
+    public function __construct($message, $channel, $sender)
     {
-        $this->text = $text;
+        $this->message = $message;
         $this->channel = $channel;
         $this->sender = $sender;
+
+        dd($this->channel);
     }
 
     /**
@@ -46,13 +49,13 @@ class NewConversationMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PresenceChannel($this->channel);
+        return new PrivateChannel($this->channel);
     }
 
     public function broadcastWith()
     {
         return [
-            'text'       => $this->text,
+            'message'       => $this->message,
             'sender'     => $this->sender,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ];

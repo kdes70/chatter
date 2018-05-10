@@ -20,31 +20,30 @@
             <div class="row searchBox">
                 <div class="col-sm-12 searchBox-inner">
                     <div class="form-group has-feedback">
-                        <input id="searchText" type="text" class="form-control" name="searchText"
+                        <input id="searchText" type="text" class="form-control" v-model="searchText"
                                placeholder="Search">
-                        <span class="glyphicon glyphicon-search form-control-feedback"></span>
+                        <!--<span class="glyphicon glyphicon-search form-control-feedback"></span>-->
                     </div>
                 </div>
             </div>
 
             <div class="sideBar">
-
-                <div v-for="user in conversations_user">
-                    <div class="row sideBar-body" v-on:click="currentConversation(user)">
-
+                <div v-for="conversation in conversations_user">
+                    <div class="row sideBar-body"
+                         v-on:click="currentConversation(conversation.user, conversation.conversation_id)">
                         <div class="col-sm-3 col-xs-3 sideBar-avatar">
                             <div class="avatar-icon">
-                                <img v-if="user.avatar" :src="user.avatar" alt="">
+                                <img v-if="conversation.user.avatar" :src="conversation.user.avatar" alt="">
                                 <img v-else src="https://bootdey.com/img/Content/avatar/avatar1.png">
                             </div>
                         </div>
                         <div class="col-sm-9 col-xs-9 sideBar-main">
                             <div class="row">
                                 <div class="col-sm-8 col-xs-8 sideBar-name">
-                                    <span class="name-meta">{{user.username}}</span>
+                                    <span class="name-meta">{{conversation.user.username}}</span>
                                 </div>
                                 <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                                    <span class="time-meta pull-right">18:18</span>
+                                    <span class="time-meta pull-right">{{conversation.message.created_at}}</span>
                                 </div>
                             </div>
                         </div>
@@ -52,232 +51,15 @@
                 </div>
             </div>
         </div>
-
-      <!--  <div class="chat-side&#45;&#45;two">
-            <div class="row newMessage-heading">
-                <div class="row newMessage-main">
-                    <div class="col-sm-2 col-xs-2 newMessage-back">
-                        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-                    </div>
-                    <div class="col-sm-10 col-xs-10 newMessage-title">
-                        New Chat
-                    </div>
-                </div>
-            </div>
-
-            <div class="row composeBox">
-                <div class="col-sm-12 composeBox-inner">
-                    <div class="form-group has-feedback">
-                        <input id="composeText" type="text" class="form-control" name="searchText"
-                               placeholder="Search People">
-                        <span class="glyphicon glyphicon-search form-control-feedback"></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row compose-sideBar">
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar1.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar2.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar3.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar4.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar5.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar6.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar2.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar3.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar4.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row sideBar-body">
-                    <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                        <div class="avatar-icon">
-                            <img src="https://bootdey.com/img/Content/avatar/avatar5.png">
-                        </div>
-                    </div>
-                    <div class="col-sm-9 col-xs-9 sideBar-main">
-                        <div class="row">
-                            <div class="col-sm-8 col-xs-8 sideBar-name">
-                   <span class="name-meta">John Doe
-                 </span>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                   <span class="time-meta pull-right">18:18
-                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>-->
     </div>
 </template>
 
 <script>
     export default {
         name: "conversations",
-        props: ['conversations'],
         data() {
             return {
+                searchText: '',
                 conversations_user: [],
                 current: [],
             }
@@ -286,20 +68,22 @@
             this.created();
         },
         created() {
-            this.conversations_user = this.conversations.user
-            // axios.get('/message/conversations')
-            //     .then(response => {
-            //         this.conversations_user = response.data.data; //we are putting data into our posts array
-            //     })
-            //     .catch(function (error) {
-            //         console.log(error); // run if we have error
-            //     });
+
+            axios.get('/messages/conversations')
+                .then(response => {
+                    this.conversations_user = response.data.data; //we are putting data into our posts array
+                    // console.log(this.conversations_user);
+                })
+                .catch(function (error) {
+                    console.log(error); // run if we have error
+                });
         },
         methods: {
-            currentConversation(user) {
+            currentConversation(user, conversation_id) {
                 this.current = user;
-                this.$emit('messages', {conversation_id: user.conversation_id, receiver: user})
+                this.$emit('messages', {conversation_id: conversation_id, receiver: user})
             }
+
         }
     }
 </script>

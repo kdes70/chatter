@@ -3,8 +3,13 @@
 namespace Kdes70\Chatter\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Kdes70\Chatter\Facades\Chatter;
+use Kdes70\Chatter\Http\Resources\ConversationsCollection;
+use Kdes70\Chatter\Http\Resources\Messages;
+use Kdes70\Chatter\Http\Resources\MessagesCollection;
 use Kdes70\Chatter\Services\ChatterService;
 
 class ChatterController extends Controller
@@ -14,6 +19,8 @@ class ChatterController extends Controller
      */
     private $service;
 
+    private $user;
+
     /**
      * Create a new controller instance.
      * @param ChatterService $service
@@ -22,52 +29,56 @@ class ChatterController extends Controller
     {
         $this->middleware(['auth']);
 
+        $this->middleware(function ($request, $next) {
+            $this->user = auth()->check() ? auth()->user()->id : null;
+            return $next($request);
+        });
+
         $this->service = $service;
 
-        dd( $this->service);
     }
 
     /**
      * Show the application dashboard.
      *
-     * @return \Illuminate\Http\Response
+     * @return ConversationsCollection
      */
     public function index()
     {
-        // TODO понять почему не определяется в конструкторе
-        $user_id = auth()->check() ? auth()->user()->id : null;
+        return view('chatter::chat');
+    }
 
-        $conversations = $this->service->getAllConversations($user_id);
 
-        return view('chatter::chat')->with([
-            'conversations' => $conversations,
-        ]);
+    /**
+     * @return ConversationsCollection
+     */
+    public function conversations()
+    {
+        $conversations = $this->service->getAllConversations($this->user);
+
+        return new ConversationsCollection($conversations);
     }
 
     /**
      * @param $conversation_id
+     * @return Messages
      */
     public function chat($conversation_id)
     {
-        $user_id = auth()->check() ? auth()->user()->id : null;
+        $conversation = $this->service->getConversationMessageById($this->user, $conversation_id);
 
-        $conversation = Chatter::getConversationMessageById($user_id);
-
-//        return view('chat')->with([
-//            'conversation' => $conversation
-//        ]);
+        return new Messages($conversation);
     }
 
-    public function newConversation($recipient_id)
-    {
-
-    }
 
     public function send(Request $request)
     {
-        $user_id = auth()->check() ? auth()->user()->id : null;
-
-        Chatter::sendConversationMessage($user_id, $request->input('conversationId'), $request->input('text'));
+        $this->service->sendConversationMessage(
+            $this->user,
+            $request->input('conversation_id'),
+            $request->input('message'),
+            $request->input('receiver_id')
+        );
     }
 
 
@@ -84,7 +95,7 @@ class ChatterController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -96,7 +107,7 @@ class ChatterController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -107,8 +118,8 @@ class ChatterController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -119,7 +130,7 @@ class ChatterController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)

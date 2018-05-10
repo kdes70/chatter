@@ -3,9 +3,10 @@
 namespace Kdes70\Chatter\Repositories\Conversation;
 
 use Illuminate\Support\Collection;
+use Kdes70\Chatter\Events\NewConversationMessage;
 use Kdes70\Chatter\Models\Conversation;
 use Kdes70\Chatter\Repositories\BaseRepository;
-use PhpJunior\LaravelVideoChat\Events\NewConversationMessage;
+
 
 class ConversationRepository extends BaseRepository
 {
@@ -37,18 +38,20 @@ class ConversationRepository extends BaseRepository
             'userTwo'
         ])->where('user_one', $user_id)->orWhere('user_two', $user_id)->get();
 
-        $threads = [];
+      /*  $threads = [];
         foreach ($conversations as $conversation) {
             $collection = (object)null;
             $collection->message = $conversation->messages->first();
             $collection->user = ($conversation->userTwo->id == $user_id) ? $conversation->userTwo : $conversation->userTwo;
             $threads[] = $collection;
         }
-        return collect($threads);
+        return collect($threads);*/
+        return $conversations;
     }
 
 
     /**
+     * TODO
      * Список всех разговоров
      *
      * @param $user_id
@@ -75,24 +78,17 @@ class ConversationRepository extends BaseRepository
 
     /**
      * @param $conversation_id
-     * @param $user_id
      * @param $channel
      *
      * @return Collection
      */
-    public function getConversationMessageById($conversation_id, $user_id, $channel): Collection
+    public function getConversationMessageById($conversation_id, $channel): Collection
     {
         $conversation = $this->query()
-            ->with(['messages', 'messages.users', 'userOne', 'userTwo',])
+            ->with(['messages', 'messages.users', 'userOne', 'userTwo'])
             ->find($conversation_id);
 
-        $collection = (object)null;
-        $collection->conversationId = $conversation_id;
-        $collection->channel_name = $channel;
-        $collection->user = ($conversation->userOne->id == $user_id) ? $conversation->userTwo : $conversation->userOne;
-        $collection->messages = $conversation->messages;
-
-        return collect($collection);
+        return collect($conversation)->merge(['channel_name' => $channel]);
     }
 
     /**
@@ -166,16 +162,36 @@ class ConversationRepository extends BaseRepository
     private function sendMessage($conversation_id, array $data)
     {
         $conversation = $this->find($conversation_id);
+
         $created = $conversation->messages()
             ->create([
-                'message'    => $data['text'],
-                'recipient_user_id' => $data['recipient_id'],
-                'sender_user_id' => $data['sender_id'],
+                'message'    => $data['message'],
+                'recipient_user_id' => $data['receiver_id'],
+                'sender_user_id' =>  $data['user_id'],
+                'status' =>  1,
+                'conversation_type' => 'conversation'
             ]);
 
         if ($created) {
-            broadcast(new NewConversationMessage($data['message'], $data['channel'], $data['sender_id']));
+            broadcast(new NewConversationMessage($data['message'], $data['channel'], $data['user_id']));
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param $user
+     * @param $conversation
+     *
+     * @return bool
+     */
+    public function canJoinConversation($user, $conversation)
+    {
+        $thread = $this->find($conversation);
+        if ($thread) {
+            if (($thread->user_one == $user->id) || ($thread->user_two == $user->id)) {
+                return true;
+            }
         }
         return false;
     }

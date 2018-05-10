@@ -2,7 +2,7 @@
 
     <div class="row chat-one">
 
-        <conversations :conversations="conversations"
+        <conversations
                 v-on:messages="getMessages">
         </conversations>
 
@@ -24,33 +24,29 @@
                     </div>
                 </div>
 
-                <div class="row message" id="conversation">
+                <div class="row message"  id="conversation">
+
                     <div class="row message-previous">
                         <div class="col-sm-12 previous">
                             <!--onclick="previous(this)"-->
-                            <a id="ankitjain28" name="20">
+                            <a :id="conversation_id" name="20">
                                 Show Previous Message!
                             </a>
                         </div>
                     </div>
 
-                    <div v-for="(value, index) in chat" class="message-body">
-                        <div class="col-sm-12" :class="className(value.user_from)">
-                            <div :class="isSender(value.user_from)">
-                                <div class="message-text">
-                                    {{value.message}}
-                                </div>
-                                <span class="message-time pull-right">{{value.created_at}}</span>
-                            </div>
-                        </div>
+                    <div  class="row message-body">
+                        <item-messages v-if="chat.messages" v-for="item in chat.messages"
+                                       :key=item.index
+                                       :message=item.message
+                                       :created_at=item.created_at
+                                       :sender_user_id=item.sender_user_id
+                                       :current_user=getUser().id
+                        >
+                        </item-messages>
                     </div>
 
-                    <!--  <message
-                               :key=value.index
-                               :color=chat.color[index]
-                               :time=chat.time[index]>
-                          {{ value }}
-                      </message>-->
+
 
 
                 </div>
@@ -85,26 +81,34 @@
 <script>
 
     import Conversations from "./Conversations"
+    import ItemMessages from "./ItemMessages"
 
     Vue.use(require('vue-chat-scroll'));
 
     export default {
 
-            props: ['conversations', 'current_user'],
+        props: ['current_user'],
 
         data() {
             return {
-                chat: {},
+                chat: {
+                    messages: [],
+                    user: [],
+                    channel_name: '',
+                    conversation_id: '',
+                },
                 conversation_id: 0,
                 receiver_id: '',
                 sender_id: '',
                 message: '',
                 numberOfUsers: '',
+
                 // typing: '',
             }
         },
         components: {
-            Conversations
+            Conversations,
+            ItemMessages
         },
         // watch: {
         //     // message() {
@@ -115,17 +119,13 @@
         //     // }
         // },
 
-        computed:{
-            channel(){
-                return  window.Echo.private('ChatMessages.' + this.conversation_id)
-
+        computed: {
+            channel() {
+                return window.Echo.private(this.chat.channel_name)
             }
-
         },
 
         created() {
-
-            console.log(this.current_user);
 
         },
         methods: {
@@ -142,30 +142,22 @@
 
             getMessages: function (conversation) {
 
-                //console.log(conversation);
-
                 this.conversation_id = conversation.conversation_id;
 
-                axios.get('/message/chat/' + conversation.conversation_id)
+                axios.get('/messages/chat/' + conversation.conversation_id)
                     .then(response => {
                         if (response.status === 200) {
-                            // id разговора
-                            this.conversation_id = response.data.data.meta.conversation_id;
-                            // id получателя
-                            this.receiver_id = conversation.receiver.id;
-                            // id отправителя
-                            this.sender_id = conversation.sender_id;
-                            // messages
-                            this.chat = response.data.data.chat_messages;
+                            this.chat = response.data.data;
                         }
                     })
                     .catch(function (error) {
                         console.log(error); // run if we have error
                     });
 
-                this.channel().listen('ChatSent', (chat) => {
-                    this.addMessage(chat.message)
-                })
+                //TODO event
+                // this.channel().listen('ChatSent', (chat) => {
+                //     this.addMessage(chat.message)
+                // })
 
                 // this.chat.user.push(e.user);
                 // this.chat.color.push('warning');
@@ -194,17 +186,14 @@
             send() {
                 if (this.message.length !== 0) {
 
-                    // this.chat.color.push('success');
-
-                    console.log(this.isSender(this.getUser().id));
-
-                    axios.post('/message/chat/send', {
+                    axios.post('/messages/chat/send', {
                         message: this.message,
                         conversation_id: this.conversation_id,
-                        sender_id: this.getUser().id,
-                        receiver_id: this.receiver_id
+                        receiver_id: this.chat.user.id
                     })
                         .then(response => {
+                            console.log(response.data.data);
+
                             // if (response.status === 201) {
                             this.addMessage(response.data.data);
                         })
@@ -223,13 +212,8 @@
                 return (avatar !== 'no_avatar.jpg') ? '/storage/avatar/' + avatar : '/img/' + avatar;
             },
 
-            className(message) {
-                return 'message-main-' + this.isSender(message);
-            },
 
-            isSender(sender) {
-                return (sender === this.getUser().id) ? 'sender' : 'receiver';
-            },
+
 
             getTime() {
                 let time = new Date();
@@ -263,29 +247,33 @@
 
         },
         updated() {
+
+            console.log(this.chat.messeges);
+
             this.scrollToEnd();
 
-            this.conversation_id = this.conversation_id;
+            // this.conversation_id = this.conversation_id;
 
-            window.Echo.join('ChatMessages.' + this.conversation_id)
-                .here((users) => {
-                    console.log('here', users);
-                    // this.numberOfUsers = users.length;
-                })
-                .joining((user) => {
-                    // this.numberOfUsers += 1;
-                    // console.log(user);
-                    console.log('joining', user);
-                    //  this.$toaster.success(user.name + ' is joined the chat room');
-                })
-                .leaving((user) => {
-                    console.log('leaving', user);
-                    // this.numberOfUsers -= 1;
-                    //this.$toaster.warning(user.name + ' is leaved the chat room');
-                });
+            // window.Echo.join(this.chat.channel_name)
+            //     .here((users) => {
+            //         console.log('here', users);
+            //         // this.numberOfUsers = users.length;
+            //     })
+            //     .joining((user) => {
+            //         // this.numberOfUsers += 1;
+            //         // console.log(user);
+            //         console.log('joining', user);
+            //         //  this.$toaster.success(user.name + ' is joined the chat room');
+            //     })
+            //     .leaving((user) => {
+            //         console.log('leaving', user);
+            //         // this.numberOfUsers -= 1;
+            //         //this.$toaster.warning(user.name + ' is leaved the chat room');
+            //     });
             //console.log('updated',this.conversation_id);
         },
         mounted() {
+
 
             console.log('Component Chat mounted.');
 
