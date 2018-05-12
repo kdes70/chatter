@@ -21,7 +21,7 @@ class Conversations extends JsonResource
     public function toArray($request)
     {
         $messages = $this->messages->first();
-        $user = ($this->userTwo->id == auth()->user()->id) ? $this->userTwo : $this->userTwo;
+        $user = ($this->userTwo->id == auth()->user()->id) ? $this->userOne : $this->userTwo;
 
         return [
             'conversation_id'      => $this->id,

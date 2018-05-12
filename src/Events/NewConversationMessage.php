@@ -1,10 +1,9 @@
 <?php
 
-namespace Kdes70\Chatter\Events;
+namespace  Kdes70\Chatter\Events;
 
 use Carbon\Carbon;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -38,8 +37,7 @@ class NewConversationMessage implements ShouldBroadcast
         $this->message = $message;
         $this->channel = $channel;
         $this->sender = $sender;
-
-        dd($this->channel);
+        $this->dontBroadcastToCurrentUser();
     }
 
     /**

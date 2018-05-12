@@ -24,6 +24,10 @@ class ConversationRepository extends BaseRepository
 
     }
 
+
+
+
+
     /**
      * @param int $user_id
      * @return Collection
@@ -104,6 +108,8 @@ class ConversationRepository extends BaseRepository
 
 
     /**
+     *  Starts a new conversation.
+     *
      * @param $userOne
      * @param $userTwo
      * @return bool

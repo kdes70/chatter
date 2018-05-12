@@ -71,9 +71,12 @@ class ChatterController extends Controller
     }
 
 
+    /**
+     * @param Request $request
+     */
     public function send(Request $request)
     {
-        $this->service->sendConversationMessage(
+       return $this->service->sendConversationMessage(
             $this->user,
             $request->input('conversation_id'),
             $request->input('message'),

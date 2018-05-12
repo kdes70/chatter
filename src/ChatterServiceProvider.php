@@ -19,6 +19,9 @@ class ChatterServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        $this->registerBroadcast();
+
         Relation::morphMap(config('chatter.relation'));
 
         $this->publishes([
@@ -32,7 +35,7 @@ class ChatterServiceProvider extends ServiceProvider
 
         $this->loadMigrationsFrom($this->migrationsPath());
 
-        $this->registerBroadcast();
+
 
     }
 
@@ -54,8 +57,8 @@ class ChatterServiceProvider extends ServiceProvider
     {
         Broadcast::channel(
             $this->app['config']->get('chatter.channel.chat_room') . '-{conversation_id}',
-            function ($user, $conversationId) {
-                if ($this->app['conversation.repository']->canJoinConversation($user, conversation_id)) {
+            function ($user, $conversation_id) {
+                if ($this->app['conversation.repository']->canJoinConversation($user, $conversation_id)) {
                     return $user;
                 }
             }

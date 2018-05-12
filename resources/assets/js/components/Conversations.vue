@@ -20,7 +20,10 @@
             <div class="row searchBox">
                 <div class="col-sm-12 searchBox-inner">
                     <div class="form-group has-feedback">
-                        <input id="searchText" type="text" class="form-control" v-model="searchText"
+                        <input id="searchText"
+                               type="text"
+                               class="form-control"
+                               v-model="searchText"
                                placeholder="Search">
                         <!--<span class="glyphicon glyphicon-search form-control-feedback"></span>-->
                     </div>
@@ -30,7 +33,7 @@
             <div class="sideBar">
                 <div v-for="conversation in conversations_user">
                     <div class="row sideBar-body"
-                         v-on:click="currentConversation(conversation.user, conversation.conversation_id)">
+                         @click="currentConversation(conversation.user, conversation.conversation_id)">
                         <div class="col-sm-3 col-xs-3 sideBar-avatar">
                             <div class="avatar-icon">
                                 <img v-if="conversation.user.avatar" :src="conversation.user.avatar" alt="">
@@ -71,6 +74,9 @@
 
             axios.get('/messages/conversations')
                 .then(response => {
+
+                    //  console.log(response.data.data);
+
                     this.conversations_user = response.data.data; //we are putting data into our posts array
                     // console.log(this.conversations_user);
                 })
@@ -81,8 +87,9 @@
         methods: {
             currentConversation(user, conversation_id) {
                 this.current = user;
-                this.$emit('messages', {conversation_id: conversation_id, receiver: user})
+                this.$emit('allMessages', {conversation_id: conversation_id, receiver: user})
             }
+
 
         }
     }

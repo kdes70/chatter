@@ -3,7 +3,7 @@
     <div class="row chat-one">
 
         <conversations
-                v-on:messages="getMessages">
+                v-on:allMessages="getMessages">
         </conversations>
 
         <div class="col-sm-8">
@@ -24,7 +24,7 @@
                     </div>
                 </div>
 
-                <div class="row message"  id="conversation">
+                <div class="row message" id="conversation">
 
                     <div class="row message-previous">
                         <div class="col-sm-12 previous">
@@ -35,9 +35,9 @@
                         </div>
                     </div>
 
-                    <div  class="row message-body">
-                        <item-messages v-if="chat.messages" v-for="item in chat.messages"
-                                       :key=item.index
+                    <div class="row message-body">
+                        <item-messages v-if="chat" v-for="(item, index) in chat.messages"
+                                       :key=index
                                        :message=item.message
                                        :created_at=item.created_at
                                        :sender_user_id=item.sender_user_id
@@ -45,8 +45,6 @@
                         >
                         </item-messages>
                     </div>
-
-
 
 
                 </div>
@@ -65,7 +63,7 @@
                     <!-- <div class="col-sm-1 col-xs-1 reply-recording">
                          <i class="fa fa-microphone fa-2x" aria-hidden="true"></i>
                      </div>-->
-                    <div class="col-sm-1 col-xs-1 reply-send" @click="send">
+                    <div class="col-sm-1 col-xs-1 reply-send" @click.prevent="send">
                         <i class="fa fa-send fa-2x" aria-hidden="true"></i>
                     </div>
                 </div>
@@ -87,21 +85,27 @@
 
     export default {
 
-        props: ['current_user'],
+        props: {
+            current_user: {
+                type: Object,
+                required: true
+            }
+        },
 
         data() {
             return {
                 chat: {
-                    messages: [],
-                    user: [],
                     channel_name: '',
+                    messages: '',
+                    user: '',
                     conversation_id: '',
                 },
+                // channel_name: '',
                 conversation_id: 0,
-                receiver_id: '',
-                sender_id: '',
+                // receiver_id: '',
+                // sender_id: '',
                 message: '',
-                numberOfUsers: '',
+                // numberOfUsers: '',
 
                 // typing: '',
             }
@@ -126,13 +130,29 @@
         },
 
         created() {
-
+            if (this.chat.channel_name) {
+                this.channel.listen('\\Kdes70\\Chatter\\Events\\NewConversationMessage', (chat) => {
+                    this.addMessage(chat)
+                })
+            }
         },
         methods: {
 
             addMessage(chat) {
-                console.log('listen', chat);
-                this.chat.push(chat);
+
+                console.log('addMessage', chat);
+
+                this.chat.push(
+                    {
+                        messages: {
+                            message: chat.message,
+                            created_at: chat.created_at,
+                            sender_user_id: chat.sender,
+
+                        },
+                    }
+                );
+
                 this.message = '';
                 // scroll to bottom after new message added
                 this.$nextTick(() => {
@@ -151,29 +171,17 @@
                         }
                     })
                     .catch(function (error) {
-                        console.log(error); // run if we have error
+                        console.log('error getMessages', error); // run if we have error
                     });
 
                 //TODO event
-                // this.channel().listen('ChatSent', (chat) => {
-                //     this.addMessage(chat.message)
-                // })
+                if (this.chat.channel_name) {
+                    this.channel.listen('\\Kdes70\\Chatter\\Events\\NewConversationMessage', (chat) => {
+                        console.log('listen', chat); // run if we have error
+                        this.addMessage(chat)
+                    })
+                }
 
-                // this.chat.user.push(e.user);
-                // this.chat.color.push('warning');
-                // this.chat.time.push(this.getTime());
-
-                // axios.post('/message/chat/store', {
-                //     chat: this.chat
-                // })
-                // .then(response => {
-                //     console.log(response);
-                // })
-                // .catch(error => {
-                //     console.log(error);
-                // });
-                // console.log(e);
-                //    })
                 // .listenForWhisper('typing', (e) => {
                 //     if (e.name != '') {
                 //         this.typing = 'typing...'
@@ -191,14 +199,9 @@
                         conversation_id: this.conversation_id,
                         receiver_id: this.chat.user.id
                     })
-                        .then(response => {
-                            console.log(response.data.data);
-
-                            // if (response.status === 201) {
-                            this.addMessage(response.data.data);
-                        })
+                        .then(response => this.addMessage(response.data))
                         .catch(error => {
-                            console.log(error);
+                            console.log('error send', error);
                         });
                 }
             },
@@ -211,9 +214,6 @@
                 let avatar = this.getUser().profile.avatar;
                 return (avatar !== 'no_avatar.jpg') ? '/storage/avatar/' + avatar : '/img/' + avatar;
             },
-
-
-
 
             getTime() {
                 let time = new Date();
@@ -248,7 +248,7 @@
         },
         updated() {
 
-            console.log(this.chat.messeges);
+            //  console.log(this.chat.messeges);
 
             this.scrollToEnd();
 
@@ -277,6 +277,14 @@
 
             console.log('Component Chat mounted.');
 
+            // if(this.chat.channel_name)
+            // {
+            //     this.channel.listen('\\Kdes70\\Chatter\\Events\\NewConversationMessage', (chat) => {
+            //
+            //         this.addMessage(chat)
+            //     })
+            // }
+
             //  this.getOldMessages();
 
             //console.log(this.user.id);
@@ -286,3 +294,8 @@
         }
     }
 </script>
+
+<style lang="scss">
+    @import '../../../sass/variables.scss';
+    @import '../../../sass/components/chat.scss';
+</style>

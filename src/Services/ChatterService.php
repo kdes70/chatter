@@ -30,7 +30,7 @@ class ChatterService
             $this->user_id = $user = \Auth::user()->id;
         }
     }
-
+    
     /**
      * @param $user_id
      * @return \Illuminate\Support\Collection
