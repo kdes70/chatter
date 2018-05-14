@@ -8,7 +8,7 @@
 
         <div class="col-sm-8">
             <div class="conversation" v-if="conversation_id !== 0">
-
+                <!--heading-->
                 <div class="row heading">
                     <div class="col-sm-2 col-md-1 col-xs-3 heading-avatar">
                         <div class="heading-avatar-icon">
@@ -25,7 +25,7 @@
                 </div>
 
                 <div class="row message" id="conversation">
-
+                    <!--message-previous-->
                     <div class="row message-previous">
                         <div class="col-sm-12 previous">
                             <!--onclick="previous(this)"-->
@@ -35,6 +35,7 @@
                         </div>
                     </div>
 
+                    <!--item-messages-->
                     <div class="row message-body">
                         <item-messages v-if="chat" v-for="(item, index) in chat.messages"
                                        :key=index
@@ -45,7 +46,6 @@
                         >
                         </item-messages>
                     </div>
-
 
                 </div>
 
@@ -72,7 +72,6 @@
         </div>
     </div>
 
-
 </template>
 
 
@@ -96,69 +95,37 @@
             return {
                 chat: {
                     channel_name: '',
-                    messages: '',
-                    user: '',
+                    messages: [],
+                    user: {},
                     conversation_id: '',
                 },
-                // channel_name: '',
                 conversation_id: 0,
-                // receiver_id: '',
-                // sender_id: '',
                 message: '',
-                // numberOfUsers: '',
-
-                // typing: '',
             }
         },
         components: {
             Conversations,
             ItemMessages
         },
-        // watch: {
-        //     // message() {
-        //     //     Echo.private('chat')
-        //     //         .whisper('typing', {
-        //     //             name: this.form.message
-        //     //         });
-        //     // }
-        // },
-
         computed: {
             channel() {
-                return window.Echo.private(this.chat.channel_name)
+                return window.Echo.channel('chat-room-'+  this.conversation_id )
             }
         },
-
         created() {
-            if (this.chat.channel_name) {
-                this.channel.listen('\\Kdes70\\Chatter\\Events\\NewConversationMessage', (chat) => {
-                    this.addMessage(chat)
-                })
-            }
+
+            console.log(this.channel);
+            this.channel.listen('Kdes70\\Chatter\\Events\\NewConversationMessage', (data) => {
+
+                //this.chat.messages.push(response.data.data);
+                console.log('created listen', data);
+                console.log('created listen channel',this.channel);
+                // this.addMessage(data);
+            });
+
+            console.log(this.channel);
         },
         methods: {
-
-            addMessage(chat) {
-
-                console.log('addMessage', chat);
-
-                this.chat.push(
-                    {
-                        messages: {
-                            message: chat.message,
-                            created_at: chat.created_at,
-                            sender_user_id: chat.sender,
-
-                        },
-                    }
-                );
-
-                this.message = '';
-                // scroll to bottom after new message added
-                this.$nextTick(() => {
-                    this.scrollToEnd();
-                })
-            },
 
             getMessages: function (conversation) {
 
@@ -169,26 +136,12 @@
                         if (response.status === 200) {
                             this.chat = response.data.data;
                         }
+                        console.log(this.channel);
+                        //TODO event
                     })
                     .catch(function (error) {
                         console.log('error getMessages', error); // run if we have error
                     });
-
-                //TODO event
-                if (this.chat.channel_name) {
-                    this.channel.listen('\\Kdes70\\Chatter\\Events\\NewConversationMessage', (chat) => {
-                        console.log('listen', chat); // run if we have error
-                        this.addMessage(chat)
-                    })
-                }
-
-                // .listenForWhisper('typing', (e) => {
-                //     if (e.name != '') {
-                //         this.typing = 'typing...'
-                //     } else {
-                //         this.typing = ''
-                //     }
-                // })
             },
 
             send() {
@@ -199,10 +152,20 @@
                         conversation_id: this.conversation_id,
                         receiver_id: this.chat.user.id
                     })
-                        .then(response => this.addMessage(response.data))
+                        .then(response => {
+                            console.log('send', response);
+
+                            this.message = '';
+                            // scroll to bottom after new message added
+                            this.$nextTick(() => {
+                                this.scrollToEnd();
+                            })
+
+                        })
                         .catch(error => {
                             console.log('error send', error);
                         });
+
                 }
             },
 
@@ -228,68 +191,19 @@
                 return id === this.getUser;
             },
 
-            // getConversationId(id)
-            // {
-            //     return this.conversation_id === id ? this.conversation_id : id
-            // }
-
-            // messages: function (id) {
-            //     axios.get('/getMessages/' + id)
-            //         .then(response => {
-            //             console.log(response.data); // show if success
-            //             app.singleMsgs = response.data; //we are putting data into our posts array
-            //             app.conID = response.data[0].conversation_id
-            //         })
-            //         .catch(function (error) {
-            //             console.log(error); // run if we have error
-            //         });
-            // },
+            isConversationId(id)
+            {
+                return this.conversation_id == id
+            }
 
         },
         updated() {
 
-            //  console.log(this.chat.messeges);
-
             this.scrollToEnd();
 
-            // this.conversation_id = this.conversation_id;
-
-            // window.Echo.join(this.chat.channel_name)
-            //     .here((users) => {
-            //         console.log('here', users);
-            //         // this.numberOfUsers = users.length;
-            //     })
-            //     .joining((user) => {
-            //         // this.numberOfUsers += 1;
-            //         // console.log(user);
-            //         console.log('joining', user);
-            //         //  this.$toaster.success(user.name + ' is joined the chat room');
-            //     })
-            //     .leaving((user) => {
-            //         console.log('leaving', user);
-            //         // this.numberOfUsers -= 1;
-            //         //this.$toaster.warning(user.name + ' is leaved the chat room');
-            //     });
-            //console.log('updated',this.conversation_id);
         },
         mounted() {
-
-
             console.log('Component Chat mounted.');
-
-            // if(this.chat.channel_name)
-            // {
-            //     this.channel.listen('\\Kdes70\\Chatter\\Events\\NewConversationMessage', (chat) => {
-            //
-            //         this.addMessage(chat)
-            //     })
-            // }
-
-            //  this.getOldMessages();
-
-            //console.log(this.user.id);
-            //  console.log('ChatMessages.' + this.conversation_id);
-
 
         }
     }

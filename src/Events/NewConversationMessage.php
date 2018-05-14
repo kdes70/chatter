@@ -1,20 +1,20 @@
 <?php
 
-namespace  Kdes70\Chatter\Events;
+namespace Kdes70\Chatter\Events;
 
 use Carbon\Carbon;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Kdes70\Chatter\Models\Message;
 
 class NewConversationMessage implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    /**
-     * @var
-     */
+
+    /** @var Message $created */
     public $message;
     /**
      * @var
@@ -32,12 +32,12 @@ class NewConversationMessage implements ShouldBroadcast
      * @param $channel
      * @param $sender
      */
-    public function __construct($message, $channel, $sender)
+    public function __construct(Message $message, $channel, $sender)
     {
         $this->message = $message;
         $this->channel = $channel;
         $this->sender = $sender;
-        $this->dontBroadcastToCurrentUser();
+        //$this->dontBroadcastToCurrentUser();
     }
 
     /**
@@ -47,13 +47,13 @@ class NewConversationMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel($this->channel);
+        return new Channel($this->channel);
     }
 
     public function broadcastWith()
     {
         return [
-            'message'       => $this->message,
+            'message'    => $this->message,
             'sender'     => $this->sender,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ];

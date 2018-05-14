@@ -25,9 +25,6 @@ class ConversationRepository extends BaseRepository
     }
 
 
-
-
-
     /**
      * @param int $user_id
      * @return Collection
@@ -42,14 +39,14 @@ class ConversationRepository extends BaseRepository
             'userTwo'
         ])->where('user_one', $user_id)->orWhere('user_two', $user_id)->get();
 
-      /*  $threads = [];
-        foreach ($conversations as $conversation) {
-            $collection = (object)null;
-            $collection->message = $conversation->messages->first();
-            $collection->user = ($conversation->userTwo->id == $user_id) ? $conversation->userTwo : $conversation->userTwo;
-            $threads[] = $collection;
-        }
-        return collect($threads);*/
+        /*  $threads = [];
+          foreach ($conversations as $conversation) {
+              $collection = (object)null;
+              $collection->message = $conversation->messages->first();
+              $collection->user = ($conversation->userTwo->id == $user_id) ? $conversation->userTwo : $conversation->userTwo;
+              $threads[] = $collection;
+          }
+          return collect($threads);*/
         return $conversations;
     }
 
@@ -92,6 +89,7 @@ class ConversationRepository extends BaseRepository
             ->with(['messages', 'messages.users', 'userOne', 'userTwo'])
             ->find($conversation_id);
 
+
         return collect($conversation)->merge(['channel_name' => $channel]);
     }
 
@@ -117,7 +115,7 @@ class ConversationRepository extends BaseRepository
     public function startConversationWith($userOne, $userTwo)
     {
         $created = $this->query()->create([
-            'userOne'  => $userOne,
+            'userOne' => $userOne,
             'userTwo' => $userTwo,
         ]);
         if ($created) {
@@ -169,20 +167,14 @@ class ConversationRepository extends BaseRepository
     {
         $conversation = $this->find($conversation_id);
 
-        $created = $conversation->messages()
+        return $conversation->messages()
             ->create([
-                'message'    => $data['message'],
+                'message'           => $data['message'],
                 'recipient_user_id' => $data['receiver_id'],
-                'sender_user_id' =>  $data['user_id'],
-                'status' =>  1,
+                'sender_user_id'    => $data['user_id'],
+                'status'            => 1,
                 'conversation_type' => 'conversation'
             ]);
-
-        if ($created) {
-            broadcast(new NewConversationMessage($data['message'], $data['channel'], $data['user_id']));
-            return true;
-        }
-        return false;
     }
 
     /**

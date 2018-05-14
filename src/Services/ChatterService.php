@@ -4,6 +4,8 @@ namespace Kdes70\Chatter\Services;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Collection;
+use Kdes70\Chatter\Events\NewConversationMessage;
+use Kdes70\Chatter\Models\Message;
 use Kdes70\Chatter\Repositories\Conversation\ConversationRepository;
 
 class ChatterService
@@ -61,15 +63,23 @@ class ChatterService
      * @param $conversation_id
      * @param $message
      * @param $receiver_id
+     * @return void
      */
     public function sendConversationMessage($user_id, $conversation_id, $message, $receiver_id)
     {
-        $this->conversation->sendConversationMessage($conversation_id, [
+        $channel = $this->getChannelName($conversation_id, 'chat_room');
+
+        $created = $this->conversation->sendConversationMessage($conversation_id, [
             'message'    => $message,
             'user_id' => $user_id,
             'receiver_id' => $receiver_id,
-            'channel' => $this->getChannelName($conversation_id, 'chat_room'),
+            'channel' => $channel,
         ]);
+
+        if($created){
+
+            return compact(['created', 'channel']);
+        }
     }
 
     /**

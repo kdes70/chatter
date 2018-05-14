@@ -74,14 +74,10 @@
 
             axios.get('/messages/conversations')
                 .then(response => {
-
-                    //  console.log(response.data.data);
-
-                    this.conversations_user = response.data.data; //we are putting data into our posts array
-                    // console.log(this.conversations_user);
+                    this.conversations_user = response.data.data;
                 })
                 .catch(function (error) {
-                    console.log(error); // run if we have error
+                    console.log(error);
                 });
         },
         methods: {
@@ -89,8 +85,9 @@
                 this.current = user;
                 this.$emit('allMessages', {conversation_id: conversation_id, receiver: user})
             }
-
-
+        },
+        mounted() {
+            console.log('conversations mounted');
         }
     }
 </script>
