@@ -3,8 +3,8 @@
 namespace Kdes70\Chatter\Events;
 
 use Carbon\Carbon;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -37,7 +37,7 @@ class NewConversationMessage implements ShouldBroadcast
         $this->message = $message;
         $this->channel = $channel;
         $this->sender = $sender;
-        //$this->dontBroadcastToCurrentUser();
+        $this->dontBroadcastToCurrentUser();
     }
 
     /**
@@ -47,7 +47,7 @@ class NewConversationMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel($this->channel);
+        return new PrivateChannel($this->channel);
     }
 
     public function broadcastWith()

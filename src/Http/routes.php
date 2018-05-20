@@ -1,9 +1,6 @@
 <?php
 
-
 # messages
-
-
 use Kdes70\Chatter\Events\NewConversationMessage;
 use Kdes70\Chatter\Http\Resources\MessageResource as MessageResource;
 
@@ -17,27 +14,37 @@ Route::group([
 //        return view('chatter::chat');
 //    })->name('messages');
 
+    Route::get('/', 'ChatterController@conversations')->name('messages');
     Route::get('/{conversation_id}', 'ChatterController@getMessages')->name('get-messages');
-    Route::get('/conversations', 'ChatterController@conversations')->name('messages');
-    Route::get('/conversations/list', 'ChatterController@getConversationList');
-    Route::get('/conversation/recipient/{recipient_id}', 'ChatterController@newConversation')->name('new_conversation');
+
     Route::get('/conversation/{conversation_id}', 'ChatterController@conversationId')->name('conversation');
+\
+    Route::get('/conversations/list', 'ChatterController@getConversationList');
 
-    Route::post('/chat/send', function (){
+    Route::get('/conversation/recipient/{recipient_id}', 'ChatterController@newConversation')->name('new_conversation');
 
-        $user_id = auth()->check() ? auth()->user()->id : null;
 
-        $result = Chatter::sendConversationMessage(
-            $user_id,
-            request('conversation_id'),
-            request('message'),
-            request('receiver_id')
+//    Route::post('/chat/send', 'ChatterController@send')->name('send');
+    Route::post('/chat/send', function (\Illuminate\Http\Request $request){
+
+        $this->user = auth()->check() ? auth()->user() : null;
+
+        $result = \Chatter::sendConversationMessage(
+            $this->user->id,
+            $request->input('conversation_id'),
+            $request->input('message'),
+            $request->input('receiver_id')
         );
 
-        broadcast(new NewConversationMessage($result['created'], $result['channel'], $user_id));
+        if ($result) {
 
-       // return new MessageResource($result['created']);
 
+            Debugbar::addMessage('Broadcasting event.', 'ajax');
+
+            broadcast(new NewConversationMessage($result['created'], $result['channel'], $this->user->id));
+
+            return new MessageResource($result['created']);
+        }
     })->name('send');
 
 });

@@ -17,6 +17,7 @@ class Message extends Model
 
     protected $fillable = ['sender_user_id', 'recipient_user_id', 'conversation_id', 'conversation_type', 'message', 'status'];
 
+    protected $guarded  = ['conversation_type', 'updated_at', 'conversation_id'];
     // protected $appends = ['conversation_id'];
 
     // TODO возможно избыточно!

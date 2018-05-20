@@ -43,7 +43,7 @@ class ConversationRepository extends BaseRepository
             },
             'userOne',
             'userTwo'
-        ])->where('user_one', $user_id)->orWhere('user_two', $user_id)->get();
+        ])->where('user_one', $user_id)->orWhere('user_two', $user_id)->orderBy('id', 'desc')->get();
 
         return $conversations;
     }
@@ -62,7 +62,9 @@ class ConversationRepository extends BaseRepository
             'userOne',
             'userTwo'
         ])->where(['user_one' => $user_id, 'user_two' => $recipient_id])
-            ->orWhere(['user_two' => $user_id, 'user_one' => $recipient_id])->first();
+            ->orWhere(function ($query) use ($user_id, $recipient_id) {
+                $query->where(['user_two' => $user_id, 'user_one' => $recipient_id]);
+            })->first();
 
         if ($conversations) {
             return $conversations;
@@ -118,6 +120,7 @@ class ConversationRepository extends BaseRepository
     public function sendConversationMessage($conversation_id, array $data)
     {
         return $this->sendMessage($conversation_id, $data);
+
     }
 
 

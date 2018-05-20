@@ -79,9 +79,9 @@ class ChatterService
      * @param $conversation_id
      * @param $message
      * @param $receiver_id
-     * @return void
+     * @return array
      */
-    public function sendConversationMessage($user_id, $conversation_id, $message, $receiver_id)
+    public function sendConversationMessage($user_id, $conversation_id, $message, $receiver_id): array
     {
         $channel = $this->getChannelName($conversation_id, 'chat_room');
 
@@ -93,9 +93,10 @@ class ChatterService
         ]);
 
         if ($created) {
-
             return compact(['created', 'channel']);
         }
+
+        return null;
     }
 
 //    /**

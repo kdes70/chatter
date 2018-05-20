@@ -5,8 +5,10 @@ namespace Kdes70\Chatter\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+use Kdes70\Chatter\Events\NewConversationMessage;
 use Kdes70\Chatter\Http\Resources\ConversationResource;
 use Kdes70\Chatter\Http\Resources\MessageListsResource;
+use Kdes70\Chatter\Http\Resources\MessageResource;
 use Kdes70\Chatter\Http\Resources\MessagesCollection;
 use Kdes70\Chatter\Services\ChatterService;
 
@@ -96,25 +98,32 @@ class ChatterController extends Controller
     {
         $conversation = $this->service->startOrGetConversationByRecipient($this->user->id, $recipient_id);
 
+
         if ($conversation) {
             return redirect()->route('conversation', ['recipient_id' => $conversation->id]);
         }
     }
 
 
-
     /**
      * @param Request $request
-     * @return void
      */
     public function send(Request $request)
     {
-        $this->service->sendConversationMessage(
+
+        $result = $this->service->sendConversationMessage(
             $this->user->id,
             $request->input('conversation_id'),
             $request->input('message'),
             $request->input('receiver_id')
         );
+
+        if ($result) {
+
+            broadcast(new NewConversationMessage($result['created'], $result['channel'], $this->user->id));
+
+            return new MessageResource($result['created']);
+        }
     }
 
 
