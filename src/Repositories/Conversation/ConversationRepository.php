@@ -24,6 +24,12 @@ class ConversationRepository extends BaseRepository
 
     }
 
+    public function getConversationsIs()
+    {
+        $conversations = $this->query()->with(['conversations'])->get();
+        dd($conversations);
+    }
+
 
     /**
      * @param int $user_id
@@ -39,15 +45,29 @@ class ConversationRepository extends BaseRepository
             'userTwo'
         ])->where('user_one', $user_id)->orWhere('user_two', $user_id)->get();
 
-        /*  $threads = [];
-          foreach ($conversations as $conversation) {
-              $collection = (object)null;
-              $collection->message = $conversation->messages->first();
-              $collection->user = ($conversation->userTwo->id == $user_id) ? $conversation->userTwo : $conversation->userTwo;
-              $threads[] = $collection;
-          }
-          return collect($threads);*/
         return $conversations;
+    }
+
+
+    /**
+     * Проверим есть ли уже разгоаор
+     *
+     * @param $user_id
+     * @param $recipient_id
+     * @return Collection|null
+     */
+    public function checkUserRecipient($user_id, $recipient_id): ?Conversation
+    {
+        $conversations = $this->query()->with([
+            'userOne',
+            'userTwo'
+        ])->where(['user_one' => $user_id, 'user_two' => $recipient_id])
+            ->orWhere(['user_two' => $user_id, 'user_one' => $recipient_id])->first();
+
+        if ($conversations) {
+            return $conversations;
+        }
+        return null;
     }
 
 
@@ -60,7 +80,6 @@ class ConversationRepository extends BaseRepository
      */
     public function getConversations(int $user_id): Collection
     {
-
         $one = $this->query(['users.*', 'convOne.id as conversations_id'])
             ->whereHas('conversationOne', function ($query) use ($user_id) {
                 $query->where('user_two', $user_id);
@@ -79,18 +98,15 @@ class ConversationRepository extends BaseRepository
 
     /**
      * @param $conversation_id
-     * @param $channel
-     *
-     * @return Collection
+     * @return Conversation|null
      */
-    public function getConversationMessageById($conversation_id, $channel): Collection
+    public function getConversationMessageById($conversation_id)
     {
         $conversation = $this->query()
             ->with(['messages', 'messages.users', 'userOne', 'userTwo'])
             ->find($conversation_id);
 
-
-        return collect($conversation)->merge(['channel_name' => $channel]);
+        return $conversation;
     }
 
     /**
@@ -110,18 +126,14 @@ class ConversationRepository extends BaseRepository
      *
      * @param $userOne
      * @param $userTwo
-     * @return bool
+     * @return Conversation
      */
-    public function startConversationWith($userOne, $userTwo)
+    public function startConversationWith($userOne, $userTwo): Conversation
     {
-        $created = $this->query()->create([
-            'userOne' => $userOne,
-            'userTwo' => $userTwo,
+        return $this->query()->create([
+            'user_one' => $userOne,
+            'user_two' => $userTwo,
         ]);
-        if ($created) {
-            return true;
-        }
-        return false;
     }
 
     /**

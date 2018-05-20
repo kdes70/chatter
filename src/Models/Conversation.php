@@ -13,6 +13,10 @@ class Conversation extends Model
 
     protected $fillable = ['user_one', 'user_two'];
 
+    public $timestamps = false;
+
+    protected $appends = ['channel_name'];
+
     /**
      * @param array $attributes
      */
@@ -21,6 +25,11 @@ class Conversation extends Model
         parent::__construct($attributes);
 
         $this->table = config('chatter.models.conversation.table');
+    }
+
+    public function getChannelNameAttribute()
+    {
+        return  $this->attributes['channel_name'] = config('chatter.channel.chat_room') . '-' . $this->id;
     }
 
 //    public function users()

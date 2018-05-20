@@ -62,11 +62,11 @@ trait ConversationRelationship
 //        });
 //    }
 
-//    /**
-//     * @return \Illuminate\Database\Query\Builder|static
-//     */
-//    public function conversations()
+    /**
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+//    public function users()
 //    {
-//        return $this->conversationOne()->union($this->conversationTwo()->toBase());
+//        return $this->userOne()->union($this->userTwo()->toBase());
 //    }
 }

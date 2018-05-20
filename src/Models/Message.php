@@ -35,9 +35,4 @@ class Message extends Model
 
 
 
-//    public function getConversationAttribute()
-//    {
-//        return $this->conversation()->id;
-//    }
-
 }

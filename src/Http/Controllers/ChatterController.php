@@ -5,10 +5,8 @@ namespace Kdes70\Chatter\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Kdes70\Chatter\Facades\Chatter;
-use Kdes70\Chatter\Http\Resources\ConversationsCollection;
-use Kdes70\Chatter\Http\Resources\Messages;
+use Kdes70\Chatter\Http\Resources\ConversationResource;
+use Kdes70\Chatter\Http\Resources\MessageListsResource;
 use Kdes70\Chatter\Http\Resources\MessagesCollection;
 use Kdes70\Chatter\Services\ChatterService;
 
@@ -30,7 +28,7 @@ class ChatterController extends Controller
         $this->middleware(['auth']);
 
         $this->middleware(function ($request, $next) {
-            $this->user = auth()->check() ? auth()->user()->id : null;
+            $this->user = auth()->check() ? auth()->user() : null;
             return $next($request);
         });
 
@@ -38,38 +36,71 @@ class ChatterController extends Controller
 
     }
 
+//    /**
+//     * Show the application dashboard.
+//     *
+//     * @return ConversationsCollection
+//     */
+//    public function index()
+//    {
+//
+//        return view('chatter::chat');
+//    }
+
+
     /**
-     * Show the application dashboard.
-     *
-     * @return ConversationsCollection
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function index()
+    public function conversations()
     {
-        return view('chatter::chat');
+        return view('chatter::chat_conversations');
     }
 
 
     /**
-     * @return ConversationsCollection
+     * @param $conversation_id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function conversations()
+    public function conversationId($conversation_id)
     {
-
-        $conversations = $this->service->getAllConversations($this->user);
-
-        return new ConversationsCollection($conversations);
+        return view('chatter::chat_conversations', ['conversation_id' => $conversation_id]);
     }
 
     /**
      * @param $conversation_id
-     * @return Messages
+     * @return MessageListsResource
      */
-    public function chat($conversation_id)
+    public function getMessages($conversation_id)
     {
-        $conversation = $this->service->getConversationMessageById($this->user, $conversation_id);
+        $messages = $this->service->getConversationMessageById($this->user->id, $conversation_id);
 
-        return new Messages($conversation);
+        return new MessageListsResource($messages);
     }
+
+    /**
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function getConversationList()
+    {
+        $conversation_list = $this->service->getAllConversations($this->user->id);
+
+        return ConversationResource::collection($conversation_list);
+    }
+
+
+    /**
+     * @param $recipient_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function newConversation($recipient_id)
+    {
+        $conversation = $this->service->startOrGetConversationByRecipient($this->user->id, $recipient_id);
+
+        if ($conversation) {
+            return redirect()->route('conversation', ['recipient_id' => $conversation->id]);
+        }
+    }
+
 
 
     /**
@@ -78,14 +109,13 @@ class ChatterController extends Controller
      */
     public function send(Request $request)
     {
-         $this->service->sendConversationMessage(
-            $this->user,
+        $this->service->sendConversationMessage(
+            $this->user->id,
             $request->input('conversation_id'),
             $request->input('message'),
             $request->input('receiver_id')
         );
     }
-
 
 
 }

@@ -17,8 +17,8 @@ class ChatterService
     /**
      * Chat constructor.
      *
-     * @param Repository                  $config
-     * @param ConversationRepository      $conversation
+     * @param Repository $config
+     * @param ConversationRepository $conversation
      */
     public function __construct(
         Repository $config,
@@ -32,7 +32,7 @@ class ChatterService
             $this->user_id = $user = \Auth::user()->id;
         }
     }
-    
+
     /**
      * @param $user_id
      * @return \Illuminate\Support\Collection
@@ -46,17 +46,33 @@ class ChatterService
      * @param $user_id
      * @param $conversation_id
      *
-     * @return Collection|null
+     * @return \Kdes70\Chatter\Models\Conversation|null
      */
-    public function getConversationMessageById($user_id, $conversation_id): ?Collection
+    public function getConversationMessageById($user_id, $conversation_id)
     {
         if ($this->conversation->checkUserExist($user_id, $conversation_id)) {
-            $channel = $this->getChannelName($conversation_id, 'chat_room');
-
-            return $this->conversation->getConversationMessageById($conversation_id, $channel);
+            return $this->conversation->getConversationMessageById($conversation_id);
         }
         abort(404);
     }
+
+
+    /**
+     * @param $user_id
+     * @param $recipient_id
+     * @return Collection|\Kdes70\Chatter\Models\Conversation|null
+     */
+    public function startOrGetConversationByRecipient($user_id, $recipient_id)
+    {
+        $conversation = $this->conversation->checkUserRecipient($user_id, $recipient_id);
+
+        if (!$conversation) {
+            $conversation = $this->conversation->startConversationWith($user_id, $recipient_id);
+        }
+
+        return $conversation;
+    }
+
 
     /**
      * @param $user_id
@@ -70,26 +86,29 @@ class ChatterService
         $channel = $this->getChannelName($conversation_id, 'chat_room');
 
         $created = $this->conversation->sendConversationMessage($conversation_id, [
-            'message'    => $message,
-            'user_id' => $user_id,
+            'message'     => $message,
+            'user_id'     => $user_id,
             'receiver_id' => $receiver_id,
-            'channel' => $channel,
+            'channel'     => $channel,
         ]);
 
-        if($created){
+        if ($created) {
 
             return compact(['created', 'channel']);
         }
     }
 
-    /**
-     * @param $auth_user_id
-     * @param $user_id
-     */
-    public function startConversationWith($auth_user_id, $user_id)
-    {
-        $this->conversation->startConversationWith($auth_user_id, $user_id);
-    }
+//    /**
+//     * Начало нового диалога
+//     *
+//     * @param $auth_user_id
+//     * @param $user_id
+//     * @return void
+//     */
+//    public function startConversationWith($auth_user_id, $user_id)
+//    {
+//        $this->conversation->startConversationWith($auth_user_id, $user_id);
+//    }
 
     /**
      * @param $conversation_id
@@ -107,6 +126,6 @@ class ChatterService
      */
     private function getChannelName($conversation_id, $type): string
     {
-        return $this->config->get('chatter.channel.'.$type).'-'.$conversation_id;
+        return $this->config->get('chatter.channel.' . $type) . '-' . $conversation_id;
     }
 }

@@ -32,25 +32,30 @@
 
             <div class="sideBar">
                 <div v-for="conversation in conversations_user">
-                    <div class="row sideBar-body"
-                         @click="currentConversation(conversation.user, conversation.conversation_id)">
-                        <div class="col-sm-3 col-xs-3 sideBar-avatar">
-                            <div class="avatar-icon">
-                                <img v-if="conversation.user.avatar" :src="conversation.user.avatar" alt="">
-                                <img v-else src="https://bootdey.com/img/Content/avatar/avatar1.png">
-                            </div>
-                        </div>
-                        <div class="col-sm-9 col-xs-9 sideBar-main">
-                            <div class="row">
-                                <div class="col-sm-8 col-xs-8 sideBar-name">
-                                    <span class="name-meta">{{conversation.user.username}}</span>
-                                </div>
-                                <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
-                                    <span class="time-meta pull-right">{{conversation.message.created_at}}</span>
+                    <a  v-bind:href="conversation.conversation_link">
+                        <div class="row sideBar-body"
+                             @click="currentConversation(conversation.user)">
+
+                            <div class="col-sm-3 col-xs-3 sideBar-avatar">
+                                <div class="avatar-icon">
+                                    <img v-if="conversation.user.avatar" :src="conversation.user.avatar" alt="">
+                                    <img v-else src="https://bootdey.com/img/Content/avatar/avatar1.png">
                                 </div>
                             </div>
+                            <div class="col-sm-9 col-xs-9 sideBar-main">
+                                <div class="row">
+                                    <div class="col-sm-8 col-xs-8 sideBar-name">
+                                        <span class="name-meta">{{conversation.user.username}}</span>
+                                        <span v-if="conversation.message != null" class="dialog-preview">{{conversation.message.message}}</span>
+                                    </div>
+                                    <div v-if="conversation.message != null" class="col-sm-4 col-xs-4 pull-right sideBar-time">
+                                        <span class="time-meta pull-right">{{conversation.message.created_at}}</span>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -63,7 +68,7 @@
         data() {
             return {
                 searchText: '',
-                conversations_user: [],
+                conversations_user: '',
                 current: [],
             }
         },
@@ -72,7 +77,7 @@
         },
         created() {
 
-            axios.get('/messages/conversations')
+            axios.get('/messages/conversations/list')
                 .then(response => {
                     this.conversations_user = response.data.data;
                 })
@@ -81,9 +86,18 @@
                 });
         },
         methods: {
-            currentConversation(user, conversation_id) {
+            currentConversation(user) {
                 this.current = user;
-                this.$emit('allMessages', {conversation_id: conversation_id, receiver: user})
+                // this.$emit('allMessages', {conversation_id: conversation_id, receiver: user})
+            },
+
+            getConversationUrl(conversation_id){
+                return '/messages/conversation/' + conversation_id;
+            },
+
+            getTimeMessage()
+            {
+                return this.conversation.message.created_at ? this.conversation.message.created_at : '';
             }
         },
         mounted() {
