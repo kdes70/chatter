@@ -15,8 +15,8 @@ class CreateConversationTable extends Migration
     {
         Schema::create(config('chatter.models.conversation.table'), function (Blueprint $table) {
             $table->increments('id')->unsigned();
-            $table->integer('user_one')->unsigned()->index();
-            $table->integer('user_two')->unsigned()->index();
+            $table->bigInteger('user_one')->unsigned()->index();
+            $table->bigInteger('user_two')->unsigned()->index();
 
             $table->unique(array('user_one', 'user_two'));
 

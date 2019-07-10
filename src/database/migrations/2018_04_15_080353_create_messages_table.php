@@ -15,8 +15,8 @@ class CreateMessagesTable extends Migration
     {
         Schema::create(config('chatter.models.message.table'), function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('sender_user_id')->unsigned();
-            $table->integer('recipient_user_id')->unsigned();
+            $table->bigInteger('sender_user_id')->unsigned();
+            $table->bigInteger('recipient_user_id')->unsigned();
             $table->integer('conversation_id')->unsigned()->comment('id беседы');
             $table->string('conversation_type');
             $table->boolean('status')->unsigned();
